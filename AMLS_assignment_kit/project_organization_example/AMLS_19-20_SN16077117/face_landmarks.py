@@ -8,7 +8,7 @@ import dlib
 global basedir, image_paths, target_size
 
 # 20200105 Start Adjust for task A1 gender classification
-basedir = '../Datasets/celeba'
+basedir = './Datasets/celeba'
 images_dir = os.path.join(basedir,'img')
 # 20200105 End Adjust for task A1 gender classification
 
@@ -107,15 +107,21 @@ def extract_features_labels():
     target_size = None
     labels_file = open(os.path.join(basedir, labels_filename), 'r')
     lines = labels_file.readlines()
-    # 20200105 Start Adjust for task A1 gender classification
+
+    # Start 20200105 Adjust for task A1 gender classification
     gender_labels = {line.split('\t')[1] : int(line.split('\t')[2]) for line in lines[1:]}
-    # 20200105 End Adjust for task A1 gender classification
+    # End 20200105 Adjust for task A1 gender classification
+
+    # Start 20200106
+    emotion_labels = {line.split('\t')[1] : int(line.split('\t')[3]) for line in lines[1:]}
+    # End 20200106
 
     if os.path.isdir(images_dir):
         all_features = []
-        all_labels = []
+        all_labels_gender = []
+        all_labels_emotion = []
         for img_path in image_paths:
-            file_name= img_path.split('.')[2].split('/')[-1]
+            file_name= img_path.split('.')[1].split('/')[-1]
             # load image
             img = image.img_to_array(
                 image.load_img(img_path,
@@ -124,8 +130,10 @@ def extract_features_labels():
             features, _ = run_dlib_shape(img)
             if features is not None:
                 all_features.append(features)
-                all_labels.append(gender_labels[file_name+'.jpg'])
+                all_labels_gender.append(gender_labels[file_name+'.jpg'])
+                all_labels_emotion.append(emotion_labels[file_name+'.jpg'])
 
     landmark_features = np.array(all_features)
-    gender_labels = (np.array(all_labels) + 1)/2 # simply converts the -1 into 0, so male=0 and female=1
-    return landmark_features, gender_labels
+    gender_labels = (np.array(all_labels_gender) + 1)/2 # simply converts the -1 into 0, so male=0 and female=1
+    emotion_labels = (np.array(all_labels_emotion) + 1)/2
+    return landmark_features, gender_labels, emotion_labels

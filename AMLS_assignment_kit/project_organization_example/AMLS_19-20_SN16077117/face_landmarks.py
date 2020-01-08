@@ -5,18 +5,18 @@ import cv2
 import dlib
 
 # PATH TO ALL IMAGES
-global basedir, image_paths, target_size
+# global basedir_celeba, basedir_cartoon, image_paths_celeba, image_paths_cartoon, target_size
+global basedir_celeba, image_paths_celeba, target_size
 
-# 20200105 Start Adjust for task A1 gender classification
-basedir = './Datasets/celeba'
-images_dir = os.path.join(basedir,'img')
-# 20200105 End Adjust for task A1 gender classification
+basedir_celeba = './Datasets/celeba'
+# basedir_cartoon = './Datasets/cartoon_set'
+images_dir_celeba = os.path.join(basedir_celeba,'img')
+# images_dir_cartoon = os.path.join(basedir_cartoon,'img')
 
 labels_filename = 'labels.csv'
 
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor('shape_predictor_68_face_landmarks.dat')
-
 
 # how to find frontal human faces in an image using 68 landmarks.  These are points on the face such as the corners of the mouth, along the eyebrows, on the eyes, and so forth.
 
@@ -55,7 +55,6 @@ def rect_to_bb(rect):
 
     # return a tuple of (x, y, w, h)
     return (x, y, w, h)
-
 
 def run_dlib_shape(image):
     # in this function we load the image, detect the landmarks of the face, and then return the image and the landmarks
@@ -103,24 +102,22 @@ def extract_features_labels():
         gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
                             which a face was detected
     """
-    image_paths = [os.path.join(images_dir, l) for l in os.listdir(images_dir)]
+    image_paths_celeba = [os.path.join(images_dir_celeba, l) for l in os.listdir(images_dir_celeba)]
     target_size = None
-    labels_file = open(os.path.join(basedir, labels_filename), 'r')
+    labels_file = open(os.path.join(basedir_celeba, labels_filename), 'r')
     lines = labels_file.readlines()
 
-    # Start 20200105 Adjust for task A1 gender classification
-    gender_labels = {line.split('\t')[1] : int(line.split('\t')[2]) for line in lines[1:]}
-    # End 20200105 Adjust for task A1 gender classification
+    # gender_labels = {line.split('\t')[1] : int(line.split('\t')[2]) for line in lines[1:]}
+    # emotion_labels = {line.split('\t')[1] : int(line.split('\t')[3]) for line in lines[1:]}
 
-    # Start 20200106
-    emotion_labels = {line.split('\t')[1] : int(line.split('\t')[3]) for line in lines[1:]}
-    # End 20200106
+    gender_emo_labels = {line.split('\t')[1] : np.array([int(line.split('\t')[2]), int(line.split('\t')[3])]) for line in lines[1:]}
 
-    if os.path.isdir(images_dir):
+    if os.path.isdir(images_dir_celeba):
         all_features = []
-        all_labels_gender = []
-        all_labels_emotion = []
-        for img_path in image_paths:
+        all_labels = []
+        # all_labels_gender = []
+        # all_labels_emotion = []
+        for img_path in image_paths_celeba:
             file_name= img_path.split('.')[1].split('/')[-1]
             # load image
             img = image.img_to_array(
@@ -130,10 +127,43 @@ def extract_features_labels():
             features, _ = run_dlib_shape(img)
             if features is not None:
                 all_features.append(features)
-                all_labels_gender.append(gender_labels[file_name+'.jpg'])
-                all_labels_emotion.append(emotion_labels[file_name+'.jpg'])
+                all_labels.append(gender_emo_labels[file_name+'.jpg'])
+                # all_labels_gender.append(gender_labels[file_name+'.jpg'])
+                # all_labels_emotion.append(emotion_labels[file_name+'.jpg'])
 
-    landmark_features = np.array(all_features)
-    gender_labels = (np.array(all_labels_gender) + 1)/2 # simply converts the -1 into 0, so male=0 and female=1
-    emotion_labels = (np.array(all_labels_emotion) + 1)/2
-    return landmark_features, gender_labels, emotion_labels
+    output_features = np.array(all_features)
+    output_labels = (np.array(all_labels) + 1) / 2
+    # gender_labels = (np.array(all_labels_gender) + 1)/2
+    # emotion_labels = (np.array(all_labels_emotion) + 1)/2
+    # return output_features, gender_labels, emotion_labels
+    return output_features, output_labels
+
+# def extract_features_labels_cartoon():
+#     image_paths_cartoon = [os.path.join(images_dir_cartoon, l) for l in os.listdir(images_dir_cartoon)]
+#     target_size = None
+#     labels_file = open(os.path.join(basedir_cartoon, labels_filename), 'r')
+#     lines = labels_file.readlines()
+#     face_shape_labels = {line.split('\t')[-1].split('\n')[0] : int(line.split('\t')[2]) for line in lines[1:]}
+#
+#     eye_color_labels = {line.split('\t')[-1].split('\n')[0] : int(line.split('\t')[2]) for line in lines[1:]}
+#
+#     if os.path.isdir(images_dir_cartoon):
+#         all_features = []
+#         all_labels_face_shape = []
+#         all_labels_eye_color = []
+#         for img_path in image_paths_cartoon:
+#             file_name = img_path.split('.')[1].split('/')[-1]
+#
+#             img = image.img_to_array(image.load_img(img_path,
+#                                                     target_size=(128,128),
+#                                                     interpolation='bicubic'))
+#             features, _ = run_dlib_shape(img)
+#             if features is not None:
+#                 all_features.append(features)
+#                 all_labels_face_shape.append(face_shape_labels[file_name+'.png'])
+#                 all_labels_eye_color.append(eye_color_labels[file_name+'.png'])
+#
+#     landmark_features = np.array(all_features)
+#     face_shape_labels = np.array(all_labels_face_shape)
+#     eye_color_labels = np.array(all_labels_eye_color)
+#     return landmark_features, face_shape_labels, eye_color_labels

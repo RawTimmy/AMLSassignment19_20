@@ -1,31 +1,15 @@
-# mlp = MLPClassifier(max_iter=200)
-# parameter_space  ={
-#     'hidden_layer_sizes': [(1024,),(2048,)],
-#     'activation': ['tanh', 'relu'],
-#     'solver': ['sgd', 'adam'],
-#     'alpha':[0.0001, 0.05],
-#     'learning_rate': ['constant','adaptive'],
-# }
-# clf = GridSearchCV(mlp, parameter_space, n_jobs=-1, cv=3)
-# clf.fit(X_train.reshape((X_train.shape[0], 68*2)), list(zip(*Y_train))[0])
-#
-# print('Best parameters found: ', clf.best_params_)
-#
-# means = clf.cv_results_['mean_test_score']
-# stds = clf.cv_results_['std_test_score']
-# for mean, std, params in zip(means, stds, clf.cv_results_['params']):
-#     print("%0.3f(+/-%0.03f) for %r" % (mean, std*2, params))
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, accuracy_score
 
 from sklearn.model_selection import GridSearchCV
-class train_A2():
-    def svm_train_with_parameter_tuning(self, img_train, label_train):
-        svm = SVC(max_iter=500)
-        parameter_space ={
-            'C': [0.00001, 0.0001, 0.01, 0.1, 1.0],
-            'kernel': ['linear', 'rbf'],
-            'probability': [True, False],
+
+class train_B1():
+    def svm_train(self, img_train, label_train):
+        svm = SVC(max_iter=500, decision_function_shape='ovr')
+        parameter_space = {
+            'C': [0.0001, 0.01, 0.1, 1.0],
+            'kernel': ['linear', 'rbf', 'poly'],
+            'probability': [True, False]
         }
 
         clf = GridSearchCV(svm, parameter_space, n_jobs=-1, cv=3, return_train_score=True)

@@ -6,11 +6,13 @@ import dlib
 
 # PATH TO ALL IMAGES
 # global basedir_celeba, basedir_cartoon, image_paths_celeba, image_paths_cartoon, target_size
-global basedir_celeba, image_paths_celeba, target_size
+global basedir_celeba, basedir_celeba_test, image_paths_celeba, image_paths_celeba_test, target_size
 
 basedir_celeba = './Datasets/celeba'
-# basedir_cartoon = './Datasets/cartoon_set'
+basedir_celeba_test = './Datasets/dataset_test_AMLS_19-20/celeba_test'
 images_dir_celeba = os.path.join(basedir_celeba,'img')
+images_dir_celeba_test = os.path.join(basedir_celeba_test,'img')
+# basedir_cartoon = './Datasets/cartoon_set'
 # images_dir_cartoon = os.path.join(basedir_cartoon,'img')
 
 labels_filename = 'labels.csv'
@@ -93,7 +95,7 @@ def run_dlib_shape(image):
 
     return dlibout, resized_image
 
-def extract_features_labels():
+def extract_features_labels(test):
     """
     This funtion extracts the landmarks features for all images in the folder 'Datasets/celeba/img'.
     It also extracts the gender label for each image.
@@ -102,9 +104,15 @@ def extract_features_labels():
         gender_labels:      an array containing the gender label (male=0 and female=1) for each image in
                             which a face was detected
     """
-    image_paths_celeba = [os.path.join(images_dir_celeba, l) for l in os.listdir(images_dir_celeba)]
+    select_dir_celeba, select_basedir_celeba = None, None
+    if test is False:
+        select_dir_celeba, select_basedir_celeba = images_dir_celeba, basedir_celeba
+    else:
+        select_dir_celeba, select_basedir_celeba = images_dir_celeba_test, basedir_celeba_test
+
+    image_paths_celeba = [os.path.join(select_dir_celeba, l) for l in os.listdir(select_dir_celeba)]
     target_size = None
-    labels_file = open(os.path.join(basedir_celeba, labels_filename), 'r')
+    labels_file = open(os.path.join(select_basedir_celeba, labels_filename), 'r')
     lines = labels_file.readlines()
 
     # gender_labels = {line.split('\t')[1] : int(line.split('\t')[2]) for line in lines[1:]}
@@ -112,7 +120,7 @@ def extract_features_labels():
 
     gender_emo_labels = {line.split('\t')[1] : np.array([int(line.split('\t')[2]), int(line.split('\t')[3])]) for line in lines[1:]}
 
-    if os.path.isdir(images_dir_celeba):
+    if os.path.isdir(select_dir_celeba):
         all_features = []
         all_labels = []
         # all_labels_gender = []

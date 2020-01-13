@@ -1,76 +1,63 @@
-import img_preprocessing as img_preprocessing
-import warnings
-from sklearn.preprocessing import StandardScaler
+import preprocessing
 
-from A1 import train_A1 as task_A1
-from A2 import train_A2 as task_A2
-from B1 import train_B1 as task_B1
+from A1 import model_svm_a1 as svm_a1
+from A2 import model_svm_a2 as svm_a2
+from B1 import model_cnn_b1 as cnn_b1
+from B2 import model_cnn_b2 as cnn_b2
 
 # ======================================================================================================================
 # Data preprocessing
-# data_train, data_val, data_test = data_preprocessing(args...)
-warnings.filterwarnings('ignore','Solver terminated early.*')
+pre = preprocessing.Preprocess()
+# Preprocess celeba dataset, 68 landmark features extraction
+img_train_gender, label_train_gender, img_train_emo, label_train_emo, img_val_gender, label_val_gender, img_val_emo, label_val_emo = pre.preprocess_celeba(False)
 
-# Start 20200106
-img_train_gender, label_train_gender, img_train_emotion, label_train_emotion, img_test_gender, label_test_gender,img_test_emotion, label_test_emotion = img_preprocessing.get_img_data_celeba()
+# Preprocess cartoon dataset, image preprocess
+train_imgs_cartoon, train_labels_cartoon, val_imgs_cartoon, val_labels_cartoon = pre.preprocess_cartoon(False)
 
-scaler_gender = StandardScaler()
-img_train_gender = scaler_gender.fit_transform(img_train_gender.reshape((img_train_gender.shape[0], 68*2)))
-img_test_gender = scaler_gender.transform(img_test_gender.reshape((img_test_gender.shape[0], 68*2)))
-
-scaler_emotion = StandardScaler()
-img_train_emotion = scaler_emotion.fit_transform(img_train_emotion.reshape((img_train_emotion.shape[0], 20*2)))
-img_test_emotion = scaler_emotion.transform(img_test_emotion.reshape((img_test_emotion.shape[0], 20*2)))
-
-img_train_face_shape, label_train_face_shape, img_test_face_shape, label_test_face_shape = img_preprocessing.get_img_data_cartoon()
-
-scaler_face_shape = StandardScaler()
-img_train_face_shape = scaler_face_shape.fit_transform(img_train_face_shape.reshape((img_train_face_shape.shape[0], 68*2)))
-img_test_face_shape = scaler_face_shape.transform(img_test_face_shape.reshape((img_test_face_shape.shape[0], 68*2)))
-# End 20200106
-
+# Additional test dataset
+img_test_gender, label_test_gender, img_test_emo, label_test_emo = pre.preprocess_celeba(True)
+test_imgs_cartoon, test_labels_cartoon = pre.preprocess_cartoon(True)
 # ======================================================================================================================
 # Task A1
-# Build model object.
-model_A1 = task_A1.train_A1()
-# Train model based on the training set (you should fine-tune your model based on validation set.)
-acc_A1_train, clf_gender = model_A1.svm_train_with_parameter_tuning(img_train_gender, label_train_gender)
-# Test model based on the test set.
-acc_A1_test = model_A1.svm_test(clf_gender, img_test_gender, label_test_gender)
+model_A1 = svm_a1.Utils_A1()
+acc_A1_train, clf_gender = model_A1.train(img_train_gender, label_train_gender)
+acc_A1_val = model_A1.test(clf_gender, img_val_gender, label_val_gender)
 
-# # ======================================================================================================================
-# # Task A2
-# Build model object.
-model_A2 = task_A2.train_A2()
-# Train model based on the training set (you should fine-tune your model based on validation set.)
-acc_A2_train, clf_emotion = model_A2.svm_train_with_parameter_tuning(img_train_emotion, label_train_emotion)
-# Test model based on the test set.
-acc_A2_test = model_A2.svm_test(clf_emotion, img_test_emotion, label_test_emotion)
+#Additional test dataset
+acc_A1_test = model_A1.test(clf_gender, img_test_gender, label_test_gender)
 #
+# # ======================================================================================================================
+# # # Task A2
+model_A2 = svm_a2.Utils_A2()
+acc_A2_train, clf_emo = model_A2.train(img_train_emo, label_train_emo)
+acc_A2_val = model_A2.test(clf_emo, img_val_emo, label_val_emo)
+
+#Additional test dataset
+acc_A2_test = model_A2.test(clf_emo, img_test_emo, label_test_emo)
+# #
 # # ======================================================================================================================
 # # Task B1
-model_B1 = task_B1.train_B1()
-acc_B1_train, clf_face_shape = model_B1.svm_train(img_train_face_shape, label_train_face_shape)
-acc_B1_test = model_B1.svm_test(clf_face_shape, img_test_face_shape, label_test_face_shape)
-#
+model_B1 = cnn_b1.Utils_B1()
+acc_B1_train, loss_B1_train = model_B1.train(train_imgs_cartoon, train_labels_cartoon[:,0])
+acc_B1_val, loss_B1_val = model_B1.test(val_imgs_cartoon, val_labels_cartoon[:,0])
+
+#Additional test dataset
+acc_B1_test, loss_B1_test = model_B1.test(test_imgs_cartoon, test_labels_cartoon[:,0])
+# ======================================================================================================================
+# # Task B2
+model_B2 = cnn_b2.Utils_B2()
+acc_B2_train, loss_B2_train = model_B2.train(train_imgs_cartoon, train_labels_cartoon[:,1])
+acc_B2_val, loss_B2_val = model_B2.test(val_imgs_cartoon, val_labels_cartoon[:,1])
+
+#Additional test dataset
+acc_B2_test, loss_B2_test = model_B2.test(test_imgs_cartoon, test_labels_cartoon[:,1])
 #
 # # ======================================================================================================================
-# # Task B2
-# model_B2 = B2(args...)
-# acc_B2_train = model_B2.train(args...)
-# acc_B2_test = model_B2.test(args...)
-# Clean up memory/GPU etc...
-
-
-# ======================================================================================================================
-## Print out your results with following format:
-# print('TA1:{},{};TA2:{},{};TB1:{},{};TB2:{},{};'.format(acc_A1_train, acc_A1_test,
-#                                                         acc_A2_train, acc_A2_test,
-#                                                         acc_B1_train, acc_B1_test,
-#                                                         acc_B2_train, acc_B2_test))
-print('TA1: {:.3f} , {:.3f}; TA2: {:.3f} , {:.3f}; TA3: {:.3f} , {:.3f};'.format(acc_A1_train, acc_A1_test,
-                                                                                 acc_A2_train, acc_A2_test,
-                                                                                 acc_B1_train, acc_B1_test))
-# If you are not able to finish a task, fill the corresponding variable with 'TBD'. For example:
-# acc_A1_train = 'TBD'
-# acc_A1_test = 'TBD'
+# ## Print out results
+print("==========Results: Training Accuracy, Validation Accuracy==========")
+print('TA1:{},{};\nTA2:{},{};\nTB1:{},{};\nTB2:{},{};'.format(acc_A1_train, acc_A1_val,
+                                                              acc_A2_train, acc_A2_val,
+                                                              acc_B1_train, acc_B1_val,
+                                                              acc_B2_train, acc_B2_val))
+print("==========Results: Testing Accuracy on Additional Test Dataset==========")
+print('TA1:{:.4f};\nTA2:{:.4f};\nTB1:{:.4f};\nTB2:{:.4f};'.format(acc_A1_test, acc_A2_test, acc_B1_test, acc_B2_test))

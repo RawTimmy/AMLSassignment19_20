@@ -115,16 +115,12 @@ def extract_features_labels(test):
     labels_file = open(os.path.join(select_basedir_celeba, labels_filename), 'r')
     lines = labels_file.readlines()
 
-    # gender_labels = {line.split('\t')[1] : int(line.split('\t')[2]) for line in lines[1:]}
-    # emotion_labels = {line.split('\t')[1] : int(line.split('\t')[3]) for line in lines[1:]}
-
     gender_emo_labels = {line.split('\t')[1] : np.array([int(line.split('\t')[2]), int(line.split('\t')[3])]) for line in lines[1:]}
 
     if os.path.isdir(select_dir_celeba):
         all_features = []
         all_labels = []
-        # all_labels_gender = []
-        # all_labels_emotion = []
+
         for img_path in image_paths_celeba:
             file_name= img_path.split('.')[1].split('/')[-1]
             # load image
@@ -136,14 +132,10 @@ def extract_features_labels(test):
             if features is not None:
                 all_features.append(features)
                 all_labels.append(gender_emo_labels[file_name+'.jpg'])
-                # all_labels_gender.append(gender_labels[file_name+'.jpg'])
-                # all_labels_emotion.append(emotion_labels[file_name+'.jpg'])
 
     output_features = np.array(all_features)
     output_labels = (np.array(all_labels) + 1) / 2
-    # gender_labels = (np.array(all_labels_gender) + 1)/2
-    # emotion_labels = (np.array(all_labels_emotion) + 1)/2
-    # return output_features, gender_labels, emotion_labels
+
     return output_features, output_labels
 
 # def extract_features_labels_cartoon():

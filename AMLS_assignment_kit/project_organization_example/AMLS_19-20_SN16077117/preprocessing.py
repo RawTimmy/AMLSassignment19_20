@@ -12,7 +12,6 @@ class Preprocess:
         print("Processing Datasets: celeba")
 
         # Extract the features with labels (gender and smile)
-        # X, label_gender, label_emo = face_landmarks.extract_features_labels()
         X, Y = face_landmarks.extract_features_labels(test)
 
         Y_gender = np.array([Y[:,0], -(Y[:,0]-1)]).T

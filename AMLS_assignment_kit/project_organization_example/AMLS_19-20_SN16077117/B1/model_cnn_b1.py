@@ -32,18 +32,6 @@ class Utils_B1:
         print("Processing task B1")
         self.cnn = CNN_B1()
 
-    # def train(self, train_imgs, train_labels, val_imgs, val_labels):
-    #
-    #     self.cnn.model.compile(optimizer='adam', loss='sparse_categorical_crossentropy', metrics=['accuracy'])
-    #
-    #     self.cnn.model.fit(train_imgs, train_labels, epochs=5)
-    #
-    #     val_loss, val_acc = self.cnn.model.evaluate(val_imgs, val_labels, verbose=0)
-    #
-    #     print("Validation Accuracy: %.4f, validate on %d images" % (val_acc, len(val_labels)))
-    #
-    #     return val_acc, val_loss
-
     def train(self, train_imgs, train_labels):
 
         # Optional: Function to plot learning curves
